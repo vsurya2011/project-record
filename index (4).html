@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Record</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ECEEF6;
+    --surface: #FFFFFF;
+    --ink: #1A1D2E;
+    --muted: #666B85;
+    --line: #DADDEB;
+    --accent: #2F4BFF;
+    --accent-soft: #E3E7FF;
+    --done: #12805C;   --done-bg: #D6F3E7;
+    --wip: #A15C00;    --wip-bg: #FFE9C2;
+    --idea: #6B3FC4;   --idea-bg: #EADFFF;
+    --danger: #C62F3E;
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --body: "Instrument Sans", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11131D; --surface: #1A1D2C; --ink: #ECEEF8; --muted: #9A9FBA; --line: #2B2F45;
+      --accent: #7F92FF; --accent-soft: #252B55;
+      --done: #5FDDAE; --done-bg: #12372B;
+      --wip: #FFC46B; --wip-bg: #3F2E0F;
+      --idea: #C2A5FF; --idea-bg: #31224F;
+      --danger: #FF7B88;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--body); background: var(--bg); color: var(--ink); line-height: 1.55; min-height: 100vh; }
+  a { color: inherit; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+  [hidden] { display: none !important; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* Top */
+  header { padding: 28px 0 28px; }
+  .authbar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 36px; min-height: 40px; }
+  .who { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .9rem; }
+  .who img { width: 30px; height: 30px; border-radius: 50%; }
+  .top { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+  h1 { font-family: var(--display); font-weight: 800; letter-spacing: -0.03em; font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 0.95; }
+  .sub { color: var(--muted); margin-top: 14px; max-width: 46ch; }
+  .count { font-family: var(--display); font-weight: 700; color: var(--muted); font-size: 1rem; }
+
+  .btn {
+    border: 0; cursor: pointer; border-radius: 999px; padding: 12px 22px; font-weight: 600;
+    background: var(--accent); color: #fff; display: inline-flex; gap: 8px; align-items: center; justify-content: center;
+    transition: transform .15s, filter .15s;
+  }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .6; cursor: progress; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn.ghost:hover { border-color: var(--ink); filter: none; }
+  .btn.danger { background: transparent; color: var(--danger); border: 1.5px solid var(--danger); }
+  .btn.small { padding: 8px 16px; font-size: .9rem; }
+
+  /* Controls */
+  .controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .search { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 999px; padding: 0 18px; }
+  .search:focus-within { border-color: var(--accent); }
+  .search input { border: 0; background: transparent; width: 100%; padding: 13px 0; outline: none; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { border: 1.5px solid var(--line); background: transparent; border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 500; font-size: .92rem; color: var(--muted); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* Grid + cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding-bottom: 80px; }
+  .card {
+    background: var(--surface); border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 14px;
+    border: 1.5px solid transparent; cursor: pointer; text-align: left; width: 100%; transition: border-color .15s, transform .15s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .card h3 { font-family: var(--display); font-size: 1.4rem; line-height: 1.15; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+  .card p.desc { color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .pill { border-radius: 999px; padding: 4px 12px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+  .pill.Completed { background: var(--done-bg); color: var(--done); }
+  .pill.In-progress { background: var(--wip-bg); color: var(--wip); }
+  .pill.Idea { background: var(--idea-bg); color: var(--idea); }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { background: var(--accent-soft); color: var(--accent); border-radius: 8px; padding: 3px 10px; font-size: .82rem; font-weight: 500; }
+  .links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 6px; }
+  .link { text-decoration: none; font-weight: 600; font-size: .9rem; padding: 8px 14px; border-radius: 12px; border: 1.5px solid var(--line); display: inline-flex; gap: 6px; align-items: center; }
+  .link:hover { border-color: var(--ink); }
+  .link.live { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  .state { grid-column: 1 / -1; text-align: center; padding: 70px 20px; color: var(--muted); }
+  .state h2 { font-family: var(--display); color: var(--ink); margin-bottom: 8px; }
+  .state .btn { margin-top: 18px; }
+
+  /* Dialogs */
+  dialog { border: 0; border-radius: 26px; padding: 0; width: min(660px, calc(100% - 28px)); max-height: calc(100% - 28px); background: var(--surface); color: var(--ink); box-shadow: 0 30px 80px rgba(10, 12, 30, .35); }
+  dialog::backdrop { background: rgba(14, 16, 32, .55); backdrop-filter: blur(4px); }
+  dialog[open] { animation: pop .18s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.98); } }
+  .dlg { padding: 30px; }
+  .dlg h2 { font-family: var(--display); font-size: 1.8rem; letter-spacing: -0.02em; margin-bottom: 20px; overflow-wrap: anywhere; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .field label, .field .lbl { font-weight: 600; font-size: .9rem; }
+  .field input, .field select, .field textarea { background: var(--bg); border: 1.5px solid transparent; border-radius: 14px; padding: 12px 14px; width: 100%; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+  .field textarea { resize: vertical; min-height: 130px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .hint { color: var(--muted); font-size: .84rem; }
+  .actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 8px; }
+  .actions .spacer { margin-right: auto; }
+  .detail-body { white-space: pre-wrap; margin: 16px 0 20px; overflow-wrap: anywhere; }
+  .detail-meta { color: var(--muted); font-size: .85rem; margin-top: 14px; }
+
+  /* Link inputs + AI */
+  .live-row { display: flex; gap: 8px; align-items: center; }
+  .icon-btn { flex: none; width: 42px; height: 42px; border-radius: 12px; border: 1.5px solid var(--line); background: transparent; cursor: pointer; font-size: 1.2rem; line-height: 1; color: var(--muted); }
+  .icon-btn:hover { border-color: var(--danger); color: var(--danger); }
+  .linkbtn { background: none; border: 0; padding: 4px 0; cursor: pointer; color: var(--accent); font-weight: 600; align-self: flex-start; }
+  .ai-box { background: var(--accent-soft); border-radius: 18px; padding: 16px 18px; display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 4px 0 22px; }
+  .ai-box p { font-size: .9rem; max-width: 36ch; }
+  .ai-box strong { display: block; font-family: var(--display); font-size: 1rem; }
+  .ai-status { font-size: .85rem; color: var(--accent); font-weight: 600; margin-top: 6px; min-height: 1.2em; }
+
+  .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 30px); opacity: 0; pointer-events: none; background: var(--ink); color: var(--bg); padding: 12px 22px; border-radius: 999px; font-weight: 500; transition: .25s; z-index: 50; max-width: calc(100% - 32px); text-align: center; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr; }
+    .dlg { padding: 22px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="authbar">
+      <div class="who" id="who" hidden>
+        <img id="avatar" alt="" referrerpolicy="no-referrer">
+        <span id="email"></span>
+      </div>
+      <button class="btn ghost small" id="authBtn" type="button">Owner sign in</button>
+    </div>
+    <div class="top">
+      <div>
+        <h1>Project<br>record</h1>
+        <p class="sub">Everything I've built or plan to build: repos, live links and notes in one place.</p>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:14px;">
+        <span class="count" id="count"></span>
+        <button class="btn" id="addBtn" type="button" hidden>+ Add project</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="controls">
+    <label class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="Search by name, tech or description" aria-label="Search projects">
+    </label>
+    <div class="chips" id="chips">
+      <button class="chip" data-status="All" aria-pressed="true" type="button">All</button>
+      <button class="chip" data-status="Completed" aria-pressed="false" type="button">Completed</button>
+      <button class="chip" data-status="In progress" aria-pressed="false" type="button">In progress</button>
+      <button class="chip" data-status="Idea" aria-pressed="false" type="button">Idea</button>
+    </div>
+  </div>
+
+  <section class="grid" id="grid" aria-live="polite">
+    <div class="state">Loading projects…</div>
+  </section>
+</main>
+
+<!-- Add / edit dialog -->
+<dialog id="formDlg">
+  <form class="dlg" id="form" method="dialog">
+    <h2 id="formTitle">Add project</h2>
+
+    <div class="field">
+      <label for="f-github">GitHub link</label>
+      <input id="f-github" type="url" placeholder="https://github.com/you/repo">
+    </div>
+
+    <div class="field">
+      <span class="lbl">Live links</span>
+      <div id="liveList" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <button class="linkbtn" type="button" id="addLive">+ Add another live link</button>
+    </div>
+
+    <div class="ai-box">
+      <div>
+        <strong>Auto-fill with AI</strong>
+        <p>Reads your GitHub or live link and writes the description, tech used and details.</p>
+        <div class="ai-status" id="aiStatus" role="status"></div>
+      </div>
+      <button class="btn small" type="button" id="aiBtn">Auto-fill</button>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="f-title">Project name</label>
+        <input id="f-title" required maxlength="80" placeholder="e.g. Weather dashboard">
+      </div>
+      <div class="field">
+        <label for="f-status">Status</label>
+        <select id="f-status">
+          <option>Completed</option>
+          <option>In progress</option>
+          <option>Idea</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="f-tech">Tech used</label>
+      <input id="f-tech" placeholder="React, Node, Firebase">
+      <span class="hint">Separate with commas.</span>
+    </div>
+
+    <div class="field">
+      <label for="f-desc">Short description</label>
+      <input id="f-desc" maxlength="220" placeholder="One line about what it does">
+    </div>
+
+    <div class="field">
+      <label for="f-details">Details</label>
+      <textarea id="f-details" placeholder="Features, what you learned, challenges, next steps…"></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn ghost" type="button" id="cancelForm">Cancel</button>
+      <button class="btn" type="submit" id="saveBtn">Save project</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Detail dialog -->
+<dialog id="detailDlg">
+  <div class="dlg" id="detail"></div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script type="module">
+  const V = "11.10.0";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, deleteField,
+    onSnapshot, query, orderBy, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+  // ================= CONFIG =================
+  const OWNER_EMAIL = "your-email@gmail.com";   // <-- change to YOUR Google email
+  const AI_MODEL = "gemini-2.5-flash";           // Gemini model used for auto-fill
+  const AI_MODULE = `https://www.gstatic.com/firebasejs/${V}/firebase-ai.js`;
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD4Ff62j6MRba9J_oky3DcckjnTl2j8HE4",
+    authDomain: "project-record-d2dd9.firebaseapp.com",
+    projectId: "project-record-d2dd9",
+    storageBucket: "project-record-d2dd9.firebasestorage.app",
+    messagingSenderId: "186654663415",
+    appId: "1:186654663415:web:e297d641a63353224e29f2",
+    measurementId: "G-Y1KR7MR4ZX"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const col = collection(db, "projects");
+
+  // ================= STATE & HELPERS =================
+  let projects = [];
+  let statusFilter = "All";
+  let searchTerm = "";
+  let editingId = null;
+  let isOwner = false;
+  let aiRunning = false;
+
+  const $ = (id) => document.getElementById(id);
+  const grid = $("grid");
+
+  const esc = (s = "") => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fixUrl = (u) => {
+    u = (u || "").trim();
+    if (!u) return "";
+    return /^https?:\/\//i.test(u) ? u : "https://" + u;
+  };
+  const statusClass = (s) => (s || "Idea").replace(" ", "-");
+  const fmtDate = (ts) => ts?.toDate ? ts.toDate().toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "just now";
+  const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return u; } };
+  const liveOf = (p) => Array.isArray(p.liveLinks) ? p.liveLinks : (p.live ? [p.live] : []);
+  const parseGithub = (u) => {
+    const m = /^https?:\/\/(?:www\.)?github\.com\/([^\/\s]+)\/([^\/\s#?]+)/i.exec(u || "");
+    return m ? { owner: m[1], repo: m[2].replace(/\.git$/i, "") } : null;
+  };
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 3200);
+  }
+
+  // ================= AUTH =================
+  onAuthStateChanged(auth, (user) => {
+    const allowed = !!user && user.email && user.email.toLowerCase() === OWNER_EMAIL.toLowerCase();
+    if (user && !allowed) {
+      toast("This account isn't the owner, so the site stays view-only.");
+      signOut(auth);
+      return;
+    }
+    isOwner = allowed;
+    $("who").hidden = !user;
+    if (user) {
+      $("email").textContent = user.email;
+      $("avatar").src = user.photoURL || "";
+      $("avatar").hidden = !user.photoURL;
+    }
+    $("authBtn").textContent = user ? "Sign out" : "Owner sign in";
+    $("addBtn").hidden = !isOwner;
+    render();
+  });
+
+  $("authBtn").addEventListener("click", async () => {
+    try {
+      if (auth.currentUser) { await signOut(auth); toast("Signed out"); }
+      else await signInWithPopup(auth, new GoogleAuthProvider());
+    } catch (err) {
+      if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request") {
+        console.error(err);
+        toast("Sign in failed: " + (err.code || err.message));
+      }
+    }
+  });
+
+  // ================= REALTIME DATA =================
+  onSnapshot(query(col, orderBy("createdAt", "desc")), (snap) => {
+    projects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+  }, (err) => {
+    console.error(err);
+    grid.innerHTML = `<div class="state"><h2>Couldn't load projects</h2>
+      <p>${esc(err.code || err.message)}. Check that Firestore is created and your rules allow reading.</p></div>`;
+  });
+
+  // ================= RENDER =================
+  function linksHtml(p, cls = "") {
+    const live = liveOf(p);
+    const out = [];
+    if (p.github) out.push(`<a class="link" href="${esc(p.github)}" target="_blank" rel="noopener" data-link>GitHub</a>`);
+    live.forEach(u => out.push(
+      `<a class="link live" href="${esc(u)}" target="_blank" rel="noopener" data-link>${live.length > 1 ? esc(hostOf(u)) : "Live site"}</a>`
+    ));
+    return out.join("");
+  }
+
+  function render() {
+    const q = searchTerm.toLowerCase();
+    const list = projects.filter(p => {
+      const matchStatus = statusFilter === "All" || p.status === statusFilter;
+      const hay = [p.title, p.description, p.details, ...(p.tech || [])].join(" ").toLowerCase();
+      return matchStatus && hay.includes(q);
+    });
+
+    $("count").textContent = projects.length ? `${projects.length} project${projects.length === 1 ? "" : "s"} saved` : "";
+
+    if (!list.length) {
+      grid.innerHTML = projects.length
+        ? `<div class="state"><h2>No matches</h2><p>Try a different search or filter.</p></div>`
+        : `<div class="state"><h2>No projects yet</h2>
+           <p>${isOwner ? "Add your first project with its GitHub and live links." : "Nothing has been added yet. Check back soon."}</p>
+           ${isOwner ? `<button class="btn" type="button" data-add>+ Add project</button>` : ""}</div>`;
+      return;
+    }
+
+    grid.innerHTML = list.map(p => `
+      <article class="card" tabindex="0" role="button" data-id="${p.id}" aria-label="Open ${esc(p.title)}">
+        <div class="card-head">
+          <h3>${esc(p.title)}</h3>
+          <span class="pill ${statusClass(p.status)}">${esc(p.status)}</span>
+        </div>
+        ${p.description ? `<p class="desc">${esc(p.description)}</p>` : ""}
+        ${(p.tech || []).length ? `<div class="tags">${p.tech.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</div>` : ""}
+        <div class="links">${linksHtml(p)}</div>
+      </article>`).join("");
+  }
+
+  // ================= EVENTS =================
+  $("search").addEventListener("input", e => { searchTerm = e.target.value.trim(); render(); });
+
+  $("chips").addEventListener("click", e => {
+    const b = e.target.closest(".chip");
+    if (!b) return;
+    statusFilter = b.dataset.status;
+    document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b));
+    render();
+  });
+
+  $("addBtn").addEventListener("click", () => openForm());
+  grid.addEventListener("click", e => {
+    if (e.target.closest("[data-add]")) return openForm();
+    if (e.target.closest("[data-link]")) return;
+    const card = e.target.closest(".card");
+    if (card) openDetail(card.dataset.id);
+  });
+  grid.addEventListener("keydown", e => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("card")) {
+      e.preventDefault();
+      openDetail(e.target.dataset.id);
+    }
+  });
+  document.querySelectorAll("dialog").forEach(d =>
+    d.addEventListener("click", e => { if (e.target === d) d.close(); })
+  );
+
+  // ================= LIVE LINK INPUTS =================
+  function addLiveRow(value = "") {
+    const row = document.createElement("div");
+    row.className = "live-row";
+    const input = document.createElement("input");
+    input.type = "url";
+    input.className = "live-input";
+    input.placeholder = "https://your-project.com";
+    input.value = value;
+    input.setAttribute("aria-label", "Live link");
+    input.addEventListener("change", maybeAutoFill);
+    const rm = document.createElement("button");
+    rm.type = "button";
+    rm.className = "icon-btn";
+    rm.textContent = "×";
+    rm.title = "Remove this link";
+    rm.setAttribute("aria-label", "Remove this live link");
+    rm.addEventListener("click", () => {
+      if ($("liveList").children.length > 1) row.remove();
+      else input.value = "";
+    });
+    row.append(input, rm);
+    $("liveList").append(row);
+    return input;
+  }
+  const liveInputs = () => [...document.querySelectorAll(".live-input")];
+  $("addLive").addEventListener("click", () => addLiveRow().focus());
+
+  // ================= FORM =================
+  function openForm(p = null) {
+    editingId = p?.id || null;
+    $("formTitle").textContent = p ? "Edit project" : "Add project";
+    $("f-title").value = p?.title || "";
+    $("f-status").value = p?.status || "In progress";
+    $("f-tech").value = (p?.tech || []).join(", ");
+    $("f-desc").value = p?.description || "";
+    $("f-github").value = p?.github || "";
+    $("f-details").value = p?.details || "";
+    $("aiStatus").textContent = "";
+    $("liveList").innerHTML = "";
+    const live = p ? liveOf(p) : [];
+    const count = Math.max(2, live.length);
+    for (let i = 0; i < count; i++) addLiveRow(live[i] || "");
+    $("detailDlg").close();
+    $("formDlg").showModal();
+    $("f-github").focus();
+  }
+  $("cancelForm").addEventListener("click", () => $("formDlg").close());
+
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!isOwner) return toast("Sign in as the owner to save.");
+    const btn = $("saveBtn");
+    const liveLinks = [...new Set(liveInputs().map(i => fixUrl(i.value)).filter(Boolean))];
+    const data = {
+      title: $("f-title").value.trim(),
+      status: $("f-status").value,
+      tech: $("f-tech").value.split(",").map(t => t.trim()).filter(Boolean),
+      description: $("f-desc").value.trim(),
+      github: fixUrl($("f-github").value),
+      liveLinks,
+      details: $("f-details").value.trim(),
+    };
+    if (!data.title) return;
+
+    btn.disabled = true; btn.textContent = "Saving…";
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, "projects", editingId), { ...data, live: deleteField(), updatedAt: serverTimestamp() });
+        toast("Changes saved");
+      } else {
+        await addDoc(col, { ...data, createdAt: serverTimestamp() });
+        toast("Project added");
+      }
+      $("formDlg").close();
+    } catch (err) {
+      console.error(err);
+      toast("Couldn't save: " + (err.code || err.message));
+    } finally {
+      btn.disabled = false; btn.textContent = "Save project";
+    }
+  });
+
+  // ================= AI AUTO-FILL =================
+  function maybeAutoFill() {
+    // Auto-run for a new project once a link is pasted and nothing else is filled yet
+    if (editingId || aiRunning) return;
+    if ($("f-desc").value.trim() || $("f-tech").value.trim() || $("f-details").value.trim()) return;
+    autoFill(false);
+  }
+  $("f-github").addEventListener("change", maybeAutoFill);
+  $("aiBtn").addEventListener("click", () => autoFill(true));
+
+  const setStatus = (t) => { $("aiStatus").textContent = t; };
+
+  async function fetchJson(url, headers) {
+    const r = await fetch(url, { headers });
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  }
+
+  async function readGithub({ owner, repo }) {
+    const base = `https://api.github.com/repos/${owner}/${repo}`;
+    const [meta, langs, readme] = await Promise.all([
+      fetchJson(base),
+      fetchJson(base + "/languages").catch(() => ({})),
+      fetch(base + "/readme", { headers: { Accept: "application/vnd.github.raw+json" } })
+        .then(r => r.ok ? r.text() : "").catch(() => "")
+    ]);
+    return {
+      name: meta.name,
+      description: meta.description || "",
+      homepage: meta.homepage || "",
+      topics: meta.topics || [],
+      languages: Object.keys(langs),
+      readme: readme.slice(0, 6000)
+    };
+  }
+
+  async function readLive(url) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      // Public reader that returns the page as plain text and allows browser requests
+      const r = await fetch("https://r.jina.ai/" + url, { signal: ctrl.signal });
+      if (!r.ok) return "";
+      return (await r.text()).slice(0, 6000);
+    } catch { return ""; }
+    finally { clearTimeout(timer); }
+  }
+
+  function parseAiJson(text) {
+    const clean = text.replace(/```json|```/g, "").trim();
+    const start = clean.indexOf("{"), end = clean.lastIndexOf("}");
+    return JSON.parse(clean.slice(start, end + 1));
+  }
+
+  async function askAi(context) {
+    const { getAI, getGenerativeModel, GoogleAIBackend } = await import(AI_MODULE);
+    const ai = getAI(app, { backend: new GoogleAIBackend() });
+    const model = getGenerativeModel(ai, {
+      model: AI_MODEL,
+      generationConfig: { responseMimeType: "application/json", temperature: 0.4 }
+    });
+    const prompt = `You are filling in a developer's project portfolio record. Use ONLY the information below. Do not invent features.
+
+Return JSON with exactly these keys:
+- "title": short project name in normal words (no hyphens or underscores)
+- "description": ONE plain sentence, max 200 characters, saying what the project does
+- "tech": array of up to 8 technologies, frameworks or languages actually used, with proper capitalisation
+- "details": 3 to 6 short lines of plain text, each starting with "- ", covering key features, how it works and anything notable
+
+Project information:
+${context}`;
+    const result = await model.generateContent(prompt);
+    return parseAiJson(result.response.text());
+  }
+
+  async function autoFill(manual) {
+    if (aiRunning) return;
+
+    // Work out which link is GitHub and which is live, whichever box it was pasted in
+    const ghField = $("f-github");
+    if (!parseGithub(fixUrl(ghField.value))) {
+      const box = liveInputs().find(i => parseGithub(fixUrl(i.value)));
+      if (box) { ghField.value = fixUrl(box.value); box.value = ""; }
+    }
+    const ghUrl = fixUrl(ghField.value);
+    const gh = parseGithub(ghUrl);
+    const liveUrls = liveInputs().map(i => fixUrl(i.value)).filter(Boolean);
+
+    if (!gh && !liveUrls.length) {
+      if (manual) toast("Add a GitHub link or a live link first.");
+      return;
+    }
+
+    aiRunning = true;
+    $("aiBtn").disabled = true;
+    let ghData = null, liveText = "";
+
+    try {
+      setStatus("Reading your link…");
+      const jobs = [];
+      if (gh) jobs.push(readGithub(gh).then(d => { ghData = d; }).catch(() => {}));
+      if (liveUrls[0]) jobs.push(readLive(liveUrls[0]).then(t => { liveText = t; }));
+      await Promise.all(jobs);
+
+      if (!ghData && !liveText) {
+        setStatus("");
+        toast(gh ? "Couldn't read that repo. Is it private or mistyped?" : "Couldn't read that site. Fill the details manually.");
+        return;
+      }
+
+      // Use the repo's homepage as a live link if none was given
+      if (ghData?.homepage && !liveUrls.length) {
+        const empty = liveInputs().find(i => !i.value.trim());
+        if (empty) empty.value = fixUrl(ghData.homepage);
+      }
+
+      const context = [
+        ghData && `GitHub repo name: ${ghData.name}`,
+        ghData?.description && `GitHub description: ${ghData.description}`,
+        ghData?.topics.length && `GitHub topics: ${ghData.topics.join(", ")}`,
+        ghData?.languages.length && `GitHub languages: ${ghData.languages.join(", ")}`,
+        ghData?.readme && `README:\n${ghData.readme}`,
+        liveText && `Live site content (${liveUrls[0]}):\n${liveText}`
+      ].filter(Boolean).join("\n\n");
+
+      let out = null;
+      try {
+        setStatus("AI is writing the details…");
+        out = await askAi(context);
+      } catch (err) {
+        console.error("AI error:", err);
+      }
+
+      if (out) {
+        if (!$("f-title").value.trim() && out.title) $("f-title").value = String(out.title).slice(0, 80);
+        if (out.description) $("f-desc").value = String(out.description).slice(0, 220);
+        if (Array.isArray(out.tech)) $("f-tech").value = out.tech.join(", ");
+        if (out.details) $("f-details").value = Array.isArray(out.details) ? out.details.join("\n") : String(out.details);
+        setStatus("Done. Check the details and save.");
+        toast("Details filled in");
+      } else if (ghData) {
+        // Fallback when AI isn't available: use what GitHub already knows
+        if (!$("f-title").value.trim()) $("f-title").value = ghData.name.replace(/[-_]+/g, " ");
+        if (ghData.description) $("f-desc").value = ghData.description;
+        const tech = [...new Set([...ghData.languages, ...ghData.topics])].slice(0, 8);
+        if (tech.length) $("f-tech").value = tech.join(", ");
+        setStatus("AI unavailable. Filled from GitHub only.");
+        toast("AI isn't set up yet, so I used GitHub info only.");
+      } else {
+        setStatus("");
+        toast("AI isn't set up yet. Enable it in the Firebase console, or fill manually.");
+      }
+    } finally {
+      aiRunning = false;
+      $("aiBtn").disabled = false;
+    }
+  }
+
+  // ================= DETAIL VIEW =================
+  function openDetail(id) {
+    const p = projects.find(x => x.id === id);
+    if (!p) return;
+    $("detail").innerHTML = `
+      <div class="card-head" style="margin-bottom:6px">
+        <span class="pill ${statusClass(p.status)}">${esc(p.status)}</span>
+      </div>
+      <h2>${esc(p.title)}</h2>
+      ${p.description ? `<p style="color:var(--muted)">${esc(p.description)}</p>` : ""}
+      ${(p.tech || []).length ? `<div class="tags" style="margin-top:14px">${p.tech.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</div>` : ""}
+      ${p.details ? `<div class="detail-body">${esc(p.details)}</div>` : `<div class="detail-body" style="color:var(--muted)">No extra details added yet.</div>`}
+      <div class="links" style="margin:0 0 20px">${linksHtml(p)}</div>
+      <div class="actions">
+        ${isOwner ? `<button class="btn danger small spacer" type="button" id="delBtn">Delete</button>` : ""}
+        <button class="btn ghost small" type="button" id="closeDetail">Close</button>
+        ${isOwner ? `<button class="btn small" type="button" id="editBtn">Edit</button>` : ""}
+      </div>
+      <p class="detail-meta">Added ${fmtDate(p.createdAt)}${p.updatedAt ? " · Edited " + fmtDate(p.updatedAt) : ""}</p>`;
+
+    $("closeDetail").onclick = () => $("detailDlg").close();
+    if (isOwner) {
+      $("editBtn").onclick = () => openForm(p);
+      $("delBtn").onclick = async () => {
+        if (!confirm(`Delete "${p.title}"? This can't be undone.`)) return;
+        try {
+          await deleteDoc(doc(db, "projects", p.id));
+          $("detailDlg").close();
+          toast("Project deleted");
+        } catch (err) {
+          console.error(err);
+          toast("Couldn't delete: " + (err.code || err.message));
+        }
+      };
+    }
+    $("detailDlg").showModal();
+  }
+</script>
+</body>
+</html>
